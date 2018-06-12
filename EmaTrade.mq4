@@ -8,9 +8,9 @@
 #property version   "1.00"
 #property strict
 
-#include "OrderST.mqh"
+#include "EmaTrade.mqh"
 int minutes=5;
-OrderST bot(minutes);
+EmaTrade bot(minutes);
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
