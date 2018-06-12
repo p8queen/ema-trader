@@ -50,18 +50,37 @@ emaTrade::emaTrade(int period){
 }
 
 void emaTrade::run(void){
-    if(!emaShortIsLow && (nextOP == OP_BUY)){
-      nextOP = OP_SELL;
-      lsNumOrders[p]=OrderSend(Symbol(),OP_BUY,0.01,Ask,10,0,0);
-      p++;
-      waitingFirstOP = false;
-      }
-    if(emaShortIsLow && (nextOP == OP_SELL)){
-      nextOP = OP_BUY;
-      lsNumOrders[p] = OrderSend(Symbol(),OP_SELL,0.01,Bid,10,0,0);
-      waitingFirstOP = false;
-      }
-
+   double price;
+   if(waitingFirstOP){
+       if(!emaShortIsLow && (nextOP == OP_BUY)){
+         nextOP = OP_SELL;
+         lsNumOrders[p]=OrderSend(Symbol(),OP_BUY,0.01,Ask,10,0,0);
+         
+       }
+       if(emaShortIsLow && (nextOP == OP_SELL)){
+         nextOP = OP_BUY;
+         lsNumOrders[p] = OrderSend(Symbol(),OP_SELL,0.01,Bid,10,0,0);
+         }
+         waitingFirstOP = false;
+         }else{
+            if(!emaShortIsLow && (nextOP == OP_BUY)){
+               if(!OrderSelect(lsNumOrders[p],SELECT_BY_TICKET,MODE_TRADES))
+                  Comment("Error Select Order ", GetLastError());
+               if(OrderProfit()+OrderCommission()+OrderSwap()>1){
+                  if(OrderType()==OP_BUY)
+                     price = Bid;
+                  else
+                     price = Ask;
+                       
+                  OrderClose(lsNumOrders[p],0.01,price,10);
+                  
+                  }
+            
+                }
+          }
+          
+          
+   emaShortIsLow = emaShortLow(periodMinutes);
    }
 
 
