@@ -29,6 +29,7 @@ public:
    int         buy(double stoploss);
    int         sell(double stoploss);
    double      getProfit();
+   void        closeWithProfit(int ticket)
    void        closeByProfit(double profitInDollars);
    void        closeByEma(int period, int orderType );
    void        openByEma(int period, int orderType );
@@ -55,35 +56,37 @@ void emaTrade::run(void){
        if(!emaShortIsLow && (nextOP == OP_BUY)){
          nextOP = OP_SELL;
          lsNumOrders[p]=OrderSend(Symbol(),OP_BUY,0.01,Ask,10,0,0);
-         
-       }
+         }
        if(emaShortIsLow && (nextOP == OP_SELL)){
          nextOP = OP_BUY;
          lsNumOrders[p] = OrderSend(Symbol(),OP_SELL,0.01,Bid,10,0,0);
          }
          waitingFirstOP = false;
          }else{
-            if(!emaShortIsLow && (nextOP == OP_BUY)){
-               if(!OrderSelect(lsNumOrders[p],SELECT_BY_TICKET,MODE_TRADES))
-                  Comment("Error Select Order ", GetLastError());
-               if(OrderProfit()+OrderCommission()+OrderSwap()>1){
-                  if(OrderType()==OP_BUY)
-                     price = Bid;
-                  else
-                     price = Ask;
-                       
-                  OrderClose(lsNumOrders[p],0.01,price,10);
-                  
-                  }
-            
-                }
+            if(!emaShortIsLow && (nextOP == OP_BUY))
+               closeWithProfit(lsNumOrders[p]);
+               }
           }
           
           
    emaShortIsLow = emaShortLow(periodMinutes);
    }
 
-
+void emaTrade::closeWithProfit(int ticket){
+      double price;   
+      if(!OrderSelect(lsNumOrders[p],SELECT_BY_TICKET,MODE_TRADES))
+         Comment("Error Select Order ", GetLastError());
+      if(OrderProfit()+OrderCommission()+OrderSwap()>1){
+         if(OrderType()==OP_BUY)
+            price = Bid;
+         else
+            price = Ask;
+              
+         OrderClose(lsNumOrders[p],0.01,price,10);
+         
+                  
+ }
+                  
 double emaTrade::getBid(void){
    return Bid;
    }
